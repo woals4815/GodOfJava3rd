@@ -14,7 +14,10 @@ public class WildCardSample {
          * 하단은 컴파일 에러
          */
         WildCardGeneric<?> wildCardGeneric1 = new WildCardGeneric<String>();
-        wildCardGeneric1.setWildcard("asdf");
+//        wildCardGeneric1.setWildcard("asdf");
+        WildCardGeneric<Car> wildCardGeneric2 = new WildCardGeneric<Car>();
+        wildCardGeneric2.setWildcard(new Car("mustang"));
+        boundedWildcardMethod(wildCardGeneric2);
     }
 
     /**
@@ -24,6 +27,21 @@ public class WildCardSample {
      */
     public void wildcardStringMethod(WildCardGeneric<?> c) {
         c.getWildcard();
+    }
+
+    public void boundedWildcardMethod(WildCardGeneric<? extends Car> c) {
+        Car value = c.getWildcard();
+        System.out.println(value);
+    }
+
+    /***
+     *
+     * @param cardGeneric
+     * @param value
+     * @param <T> -> 이건 리턴 타입이 아니다.
+     */
+    public <T> void genericMethod(WildCardGeneric<T> cardGeneric, T value) {
+        cardGeneric.setWildcard(value);
     }
 }
 
@@ -39,3 +57,23 @@ class WildCardGeneric<W> {
         return wildcard;
     }
 }
+
+class Car {
+    protected String brand;
+    public Car(String brand) {
+        this.brand = brand;
+    }
+    public String getBrand() {
+        return brand;
+    }
+}
+
+class Bus extends Car {
+    public Bus(String brand) {
+        super(brand);
+    }
+    public String toString() {
+        return "bus brand " + brand;
+    }
+}
+
