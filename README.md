@@ -113,8 +113,144 @@
 | 여러 쓰레드 안전여부      | X       | O         |
 
 
+## Volume2/chapter25 - Thread
 
 
+* Runnable interface, Thread class
+  * Thread class는 Runnale을 구현한 클래스
+
+| return | method name,parameter | desc               |
+|--------|-----------------------|--------------------|
+| void   | run()                 | 쓰레드가 시작되면 수행되는 메소드 |
+
+스레드를 시작하는 방법은 두가지가 있다.
+```java
+/**
+ RunnableSample은 Runnable interface 구현체
+ */
+RunnableSample runnable = new RunnableSample();
+new Thread(runnable).start();
+
+ThreadSample thread = new ThreadSample();
+thread.start();
+```
+두 가지 방법을 제공하는 이유는 class는 다중상속이 되지 않는다. 그래서 만약 어떤 클래스가 다른 클래스를 상속받아야 하는데 해당 부모 클래스가 Thread를 상속받고 있지 않는다면 전자와 같이 실행할 수 있다.
+
+* DaemonThread
+  * Thread 클래스에는 setDaemon이라는 메소드
+  * Daemon Thread는 start 메소드가 호출되기 전에 지정해줘야 함.
+  * Daemon Thread는 사용자 쓰레드가 실행되고 있지 않으면 JVM이 끝난다.
+  * 이러한 용도는 부가적인 작업이 필요할 때(다른 쓰레드 모니터링 등)에 사용됨
 
 
+* Synchronized
+  * 같은 자원(하나의 객체)에 접근하는 스레드들의 작업들을 동기화 시키는 역할을 한다
+  * 접근 제어자 옆에 작성 가능
+  * 다만 메소드 전체에 synchronized를 추가한다면 성능 문제 발생
 
+```java
+  public void plus(int value) {
+    synchronized (this) {
+      amount += value;
+    }
+  }
+```
+
+위와 같은 형식으로 작성하여 중괄호 내에 연산만 동시 처리를 하지 않겠다고 명시한다.
+synchronized 매개변수로는 this를 넣어도 되지만 이는 lock 역할을 하는 object를 넣는 것이 일반적
+```java
+  Object amountLock = new Object();
+  Object interestLock = new Object();
+  public void addInterest(int interset) {
+    synchronized (interestLock) {
+        this.interest +=interset;
+    }
+  }
+  public void addAmount(int amount) {
+    synchronized (amountLock) {
+      this.amount += amount;
+    }
+  }
+
+```
+
+* Thread를 통제하는 메소드
+
+| return       | method, parameter            | desc                            |
+|--------------|------------------------------|---------------------------------|
+| Thread.State | getState()                   | check thread states             |
+| void         | join()                       | wait until sub thread terminate |
+| void         | join(long millis)            | wait until millis amount        |
+| void         | join(long millis, int nanos) | wailt until millis + nanos      |
+| void         | interrupt()                  | 수행중인 쓰레드에 중지 요청                 |
+
+* ThreadGroup
+  * 쓰레드의 관리를 용이하게 하기 위한 클래스
+
+## I/O
+    Stream - byte 기반 데이터 처리
+    char기반 문자열 처리 Reader / Writer
+    jdk 1.4부터는 New I/O 인 NIO -> Buffer & Channel
+
+* File과 Files
+  * NIO -> Files, java.io -> File
+  * Files는 static 메소드를 제공해서 File 객체 생성 필요 없음
+
+* InputStream, OutputStream
+  * abtract class를 통해서 제공됨.
+
+```java
+import java.io.Closeable;
+
+public abstract class InputStream extends Object implements Closeable;
+```
+* 어떤 리소스를 열었던 간, close method를 이용해 닫아야 한다는 것을 의미
+
+| return type  | method, parameter                | desc                                           |
+|--------------|----------------------------------|------------------------------------------------|
+| int          | available()                      | 스트림에서 중단없이 읽을 수 있는 바이트 개수 반환                   |
+| void         | mark(int readlimit)              | 스트림의 현재 위치를 표시해둔다. int 매개변수는 표시해 둔 자리의 최대 유효길이 |
+| void         | reset()                          | 현재 위치를 mark() 메소드가 호출됐던 위치로 되돌린다.              |
+| boolean      | markSupported()                  | mark(), reset()가능한 지 확인                        |
+| abstract int | read()                           | 스트림에서 다음 바이트를 읽는담                              |
+| int          | read(byte[] b)                   | 매개 변수로 넘어온 바이트 배열에 데이터를 담는다. 리턴값은 데이터 담은 개수    |
+| int          | read(byte[] b, int off, int len) | 바이트 배열에 특정 위치(off)부터 지정한 길이만큼 데이터를 담는다         |  
+| long         | skip(long n)                     | n 만큼 데이터를 건너뛴다                                 |
+| void         | close()`                          | 스트림에서 작업중인 대상 해제.                              |
+
+* InputStream 확장 클래스
+```java
+  import javax.sound.sampled.AudioInputStream;
+import java.io.*;
+
+AudioInputStream,ByteArrayInputStream,FileInputStream,FilterInputStream,InputStream,ObjectInputStream, PipedInputStream, SequenceInputStream
+```
+
+* OutputStream
+
+```java
+import java.io.Closeable;
+import java.io.Flushable;
+
+public abstract class OutputStream extends Object implements Closeable, Flushable
+```
+쓰기 요청을 할 때 매 요청마다 쓰고 저장하고 하는 것은 비효율적.
+그래서 쓰기 요청 데이터를 버퍼에다가 저장하다가 어느 정도 차면 한번에 쓰기.
+그러한 버퍼를 사용할 때 flush 메소드는 현재 버퍼에서 대기하고 있는 데이터를 강제로 쓰도록 한다.
+
+* OutputStream 또한 close() 메소드로 리소스를 닫아주어야 한다.
+* 텍스트 기반의 기본 자료형이나 문자열 데이터를 처리할 때는 BufferedReader 대신 Scanner가 편하다
+
+## Serializable과 NIO에 대해
+* 용도
+  * 생성한 객체를 파일로 저장, 읽기, 다른 서버로 전송 등등을 할 수 있게 해줌
+  * static final long serialVersionUID 값을 지정해줘야 한다.
+    * 각 서버가 쉽게 전송을 주고 받는 객체가 같은 지 다른지를 확인할 수 있도록 관리하는 용도
+
+* NIO의 Buffer class
+  * Bytebuffer, CharBuffer,..etc 등등 확장된 버퍼 클래스가 많다.
+  * method
+    * capacity return 버퍼에 담을 수 있는 크기
+    * limit() - return 버퍼에서 읽거나 쓸 수 없는 첫 위치 
+    * position() - return 현재 버퍼의 위치
+  
