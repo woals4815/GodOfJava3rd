@@ -254,3 +254,106 @@ public abstract class OutputStream extends Object implements Closeable, Flushabl
     * limit() - return 버퍼에서 읽거나 쓸 수 없는 첫 위치 
     * position() - return 현재 버퍼의 위치
   
+
+## java8에 추가도니 사항
+
+* Optional
+  ```java
+    public final class Optional<T> extends Object;
+  ```
+  * final로 선언돼 있으므로 상속이 불가능
+  * 데이터가 없는 Optional 객체 생성에는 empty()메소드 사용
+  * null이 추가될 수 있는 상황이라면 ofNullable() 메소드 사용
+  * 반드시 데이터가 들어갈 수 있는 상황에는 of()메소드 사용
+* default 키워드
+  * interface 내에 default 예약어를 통해 default method를 넣을 수 있음
+  ```java
+
+    interface Car {
+      String brand;
+      default String getBrand() {
+          return "Toyota";
+        }    
+      }
+  ```
+* 날짜 관련 클래스
+  * 기존의 api 복잡도 때문에 java.time 추가
+* 병렬 배열 정렬
+  * binarySearch()
+  * copyOf()
+  * equals()
+  * fill()
+  * hashCode()
+  * sort()
+  * toSTring()
+  * sort의 경우 단일 스레드, parallelSort()는 병렬작업
+* StringJoiner
+  * 순차적으로 나열되는 문자열을 처리할 때 사용
+
+```java
+  import java.util.StringJoiner;
+
+public void join(String[] args) {
+  StringJoiner joiner = new StringJoiner(",");
+  for (String arg: args) {
+    joiner.add(arg);
+  }
+  System.out.println(joiner); // Studyhard,godofjava,book
+}
+```
+
+## java8에서 변경된 것
+* Lambda 표현식
+  * 인터페이스에 메소드가 하나인 것들에 적용 가능
+  * 익명 클래스 <-> 인터페이스 서로 전환 가능
+* java.util.function 패키지
+  * Predicate
+    * test() -> 두 객체를 비교할 때 사용
+  * Supplier
+    * get(), 리턴값은 generic으로 선언된 타입을 리턴
+  * Consumer
+    * accept()라는 매개변수를 하나 갖는 메소드가 있으며 리턴값 없음.
+  * Function
+    * apply()라는 하나의 매개 변수를 갖는 메소드가 잇음
+  * UnaryOperator
+    * apply()라는 하나의 매개변수를 갖는 메소드가 있음.
+  * BinaryOperator
+    * apply()라는 두개의 매개변수를 갖는 메소드가 있음. 
+
+* Stream
+  * 컬렉션에는 스트림을 사용할 수 있지만 배열에는 X
+  * 그래서 배열을 컬렉션의 List로 변환해서 사용
+* 메소드 참조
+  * 자바스크립트에서 console.log만 넣어서 콜백 함수를 매개인자로 넣어주듯이 사용(HOC 처럼 사용하기)
+  * static 메소드참조
+  * 특정 객체의 인스턴스 메소드 참조
+  * 특정 유형의 임의이 객체에 대한 인스턴스 메서드 참조
+  * 생성자 참
+
+```java
+  import java.util.List;//staic method 참조
+private void printAll(List<String> args) {
+    args.stream().forEach(System.out::println);
+}
+```
+
+## JAVA9
+* Interface의 privaet 메소드 추가 가능
+  * abstract 메소드로 선언하면 안됨. private, abstract 제어자를 같이 사용해도 안됨
+  * 인터페이스 내에 선언한 메소드와 static이나 static이 아닌 인터페이스 메소드에서만 사용 가능
+  * private으로 선언한 static이 아닌 메소드는 다른 private static 메소드에서 사용 불가능
+  * private으로만 선언
+* 새로운 HttpClient
+* Pub-sub framework
+* pub sub 할 publish가 한번에 빨리 되지 않는 이유
+1. Reactive Stream의 기본 원칙
+     Reactive Stream는 **백프레셔(Backpressure)**를 처리하도록 설계.
+     SubmissionPublisher는 데이터를 구독자에게 발행할 때, 구독자가 데이터를 처리할 수 있는 속도에 맞춰 발행.
+     즉, 구독자가 데이터를 빨리 처리하지 못하면 SubmissionPublisher가 발행 속도를 조절하거나 데이터가 큐에 쌓임.
+2. SubmissionPublisher의 내부 동작
+   SubmissionPublisher는 내부적으로 큐를 사용하여 데이터를 저장하고 구독자에게 전달.
+   구독자가 데이터를 처리하기 전에는 새로운 데이터를 큐에 쌓아두지만, 큐가 가득 차면 submit() 메서드 호출이 블로킹 상태에 빠질 수 있음.
+   기본적으로 SubmissionPublisher의 큐 크기는 256. 이를 초과하면 발행자는 대기.
+3. 구독자(ReactiveStreamSubscriber)의 처리 속도
+   구독자는 데이터를 처리하는 데 시간이 걸림. 예를 들어, onNext 메서드 내부에서 데이터를 처리하는 작업이 오래 걸리면, SubmissionPublisher는 구독자가 데이터를 처리할 때까지 대기.
+   이로 인해 발행자(pub.submit(i))가 빠르게 진행되지 않고 점진적으로 진행
