@@ -357,3 +357,6 @@ private void printAll(List<String> args) {
 3. 구독자(ReactiveStreamSubscriber)의 처리 속도
    구독자는 데이터를 처리하는 데 시간이 걸림. 예를 들어, onNext 메서드 내부에서 데이터를 처리하는 작업이 오래 걸리면, SubmissionPublisher는 구독자가 데이터를 처리할 때까지 대기.
    이로 인해 발행자(pub.submit(i))가 빠르게 진행되지 않고 점진적으로 진행
+
+* 자바의 모듈화 - 직소 프로젝트
+  * 어플리케이션을 모듈이라는 독립적인 단위로 나눔
